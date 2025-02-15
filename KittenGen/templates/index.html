@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KittenGen</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+
+    <link href="/static/css/codemirror.min.css" rel="stylesheet" >
+    <script src="/static/js/codemirror.min.js"></script>
+    <script src="/static/js/clike.min.js"></script>
+    <script src="/static/js/python.min.js"></script>
+
+    <style type="text/css">
+        .CodeMirror {
+            min-height: 150px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <form method="post" action="/" class="card shadow" onsubmit="syncCodeEditors()">
+        <div class="card-body">
+            {% if error %}
+            <div class="alert alert-danger" id="errAlert" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <h5 class="alert-heading">错误！</h5>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <!-- Std.cpp 输入区域 -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">程序 Std(std.cpp)</label>
+                <div id="std-editor" class="border rounded overflow-hidden"></div>
+                <textarea class="d-none" id="std" name="std"></textarea>
+            </div>
+
+            <!-- Maker.py 输入区域 -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">
+                    数据生成器(maker.py)
+                    <a href="/help" class="fs-6 text-decoration-none ms-2">查看帮助说明？</a>
+                </label>
+                <div id="maker-editor" class="border rounded overflow-hidden"></div>
+                <textarea class="d-none" id="maker" name="maker"></textarea>
+            </div>
+
+            <!-- 数据组数 -->
+            <div class="mb-4">
+                <label for="num" class="form-label fw-bold">数据组数</label>
+                <input type="number" class="form-control" id="num" name="num"
+                    min="1" value="10" required>
+            </div>
+
+            <!-- 编译选项 -->
+            <div class="mb-4">
+                <label for="options" class="form-label fw-bold">C++ 编译选项</label>
+                <input type="text" class="form-control" id="options" name="options"
+                    value="-O2 -std=c++14 -Wl,--stack=204800000" required>
+            </div>
+
+            <!-- SPJ 开关 -->
+            <div class="mb-3 form-check form-switch">
+                <input type="checkbox" class="form-check-input" id="useSpj"
+                    name="useSpj" role="switch">
+                <label class="form-check-label fw-bold" for="useSpj">是否使用SPJ</label>
+            </div>
+
+            <!-- SPJ 输入区域（默认隐藏） -->
+            <div id="spjSection" style="display: none;">
+                <div class="mb-4">
+                    <label class="form-label fw-bold">SPJ(checker.cpp)</label>
+                    <div id="checker-editor" class="border rounded overflow-hidden"></div>
+                    <textarea class="d-none" id="checker" name="checker"></textarea>
+                </div>
+            </div>
+
+            <!-- Config 开关 -->
+            <div class="mb-3 form-check form-switch">
+                <input type="checkbox" class="form-check-input" id="useCfg"
+                    name="useCfg" role="switch">
+                <label class="form-check-label fw-bold" for="useCfg">是否使用配置文件</label>
+            </div>
+
+            <!-- config.yml 输入区域（默认隐藏） -->
+            <div id="cfgSection" style="display: none;">
+                <div class="mb-4">
+                    <label class="form-label fw-bold">配置文件(config.yml)</label>
+                    <div id="config-editor" class="border rounded overflow-hidden"></div>
+                    <textarea class="d-none" id="config" name="config"></textarea>
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <input type="submit" class="btn btn-primary btn-lg w-100 mt-3" id="submit" value="提交">
+        </div>
+    </form>
+</div>
+
+<script>
+    // 初始化代码编辑器
+    const editors = {
+        std: CodeMirror(document.getElementById('std-editor'), {
+            mode: 'text/x-c++src',
+            lineNumbers: true,
+            theme: 'default',
+            indentUnit: 4,
+            extraKeys: {"Ctrl-Space": "autocomplete"},
+            value: document.getElementById('std').value
+        }),
+        maker: CodeMirror(document.getElementById('maker-editor'), {
+            mode: 'python',
+            lineNumbers: true,
+            theme: 'default',
+            indentUnit: 4,
+            value: document.getElementById('maker').value
+        }),
+        checker: CodeMirror(document.getElementById('checker-editor'), {
+            mode: 'text/x-c++src',
+            lineNumbers: true,
+            theme: 'default',
+            indentUnit: 4,
+            value: document.getElementById('checker').value
+        }),
+        checker: CodeMirror(document.getElementById('config-editor'), {
+            lineNumbers: true,
+            theme: 'default',
+            indentUnit: 4,
+            value: document.getElementById('config').value
+        })
+    };
+
+    // 同步编辑器内容到表单
+    function syncCodeEditors() {
+        document.getElementById('std').value = editors.std.getValue();
+        document.getElementById('maker').value = editors.maker.getValue();
+        document.getElementById('checker').value = editors.checker.getValue();
+    }
+
+    // SPJ 切换逻辑
+    document.getElementById('useSpj').addEventListener('change', function() {
+        const spjSection = document.getElementById('spjSection');
+        spjSection.style.display = this.checked ? 'block' : 'none';
+    });
+    // Config 切换逻辑
+    document.getElementById('useCfg').addEventListener('change', function() {
+        const cfgSection = document.getElementById('cfgSection');
+        cfgSection.style.display = this.checked ? 'block' : 'none';
+    });
+</script>
+</body>
+
+</html>

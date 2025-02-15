@@ -1,0 +1,3 @@
+recursive-include KittenGen/static/js *.js
+recursive-include KittenGen/static/css *.css
+recursive-include KittenGen/template *.html
