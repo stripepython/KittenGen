@@ -13,7 +13,7 @@ setup(
     maintainer='stripe-python',
     maintainer_email='stripe-python@139.com',
     license='MIT License',
-    install_requires=['flask~=3.0.3'],
+    install_requires=['flask', 'jinja2'],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

@@ -1,19 +1,28 @@
 import os
 import zipfile
 
-from flask import Flask, render_template, request, send_file
+import jinja2
+from flask import Flask, request, send_file
 
 from .lib import global_vars   # 默认变量
 
 app = Flask(__name__)
 
 GCC_PATH = 'g++.exe'   # 这里填写你的g++路径
+DIR_PATH = os.path.join(os.path.dirname(__file__), 'templates')
+
+
+def renders(file: str, **kwargs):
+    with open(os.path.join(DIR_PATH, file), 'r', encoding='utf-8') as f:
+        s = f.read()
+    template = jinja2.Template(s)
+    return template.render(**kwargs)
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():   # 主网页
     if request.method == 'GET':
-        return render_template('index.html', error=None)
+        return renders('index.html', error=None)
     cwd = os.getcwd()  # 记录当前工作路径
     data_path = os.path.join(cwd, 'data')
     if not os.path.exists(data_path):
@@ -26,7 +35,7 @@ def index():   # 主网页
         maker_complied = compile(maker, 'maker.py', 'exec')   # 先编译生成器
     except (Exception, SystemExit) as err:
         os.chdir(cwd)  # 切换回原工作路径
-        return render_template('index.html', error=str(err))
+        return renders('index.html', error=str(err))
 
     use_spj, use_cfg = form.get('useSpj'), form.get('useCfg')
     if use_spj:
@@ -50,7 +59,7 @@ def index():   # 主网页
             exec(maker_complied, local_vars)
         except (Exception, SystemExit) as err:
             os.chdir(cwd)  # 切换回原工作路径
-            return render_template('index.html', error=str(err))
+            return renders('index.html', error=str(err))
         finally:
             in_file.close()
         os.system(f'std.exe < {i}.in > {i}.out')   # 使用 std 生成答案
@@ -70,4 +79,4 @@ def index():   # 主网页
 
 @app.route('/help/')
 def show_help():
-    return render_template('help.html')
+    return renders('help.html')
