@@ -1,14 +1,19 @@
 import os
 import zipfile
-
 import jinja2
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, render_template, redirect, url_for, session
 
-from .lib import global_vars   # 默认变量
+from werkzeug.security import generate_password_hash, check_password_hash
 
-app = Flask(__name__)
+from lib import global_vars   # 默认变量
+from dotenv import load_dotenv
 
-GCC_PATH = 'g++.exe'   # 这里填写你的g++路径
+load_dotenv()
+
+PASSWORD = os.getenv("PASSWORD")
+GCC_PATH = os.getenv("GCC_PATH")
+
+# GCC_PATH = 'g++.exe'   # 这里填写你的g++路径
 DIR_PATH = os.path.join(os.path.dirname(__file__), 'templates')
 
 
@@ -18,9 +23,36 @@ def renders(file: str, **kwargs):
     template = jinja2.Template(s)
     return template.render(**kwargs)
 
+app = Flask(__name__)
+app.secret_key = "12345" #替换为随机字符串
 
-@app.route('/', methods=['GET', 'POST'])
-def index():   # 主网页
+
+# 预定义密码（存储哈希值，非明文）
+PASSWORD_HASH = generate_password_hash(PASSWORD)  # 替换为你的密码
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if session.get("authenticated"):
+        return redirect(url_for("index"))  # 已登录则跳转主页面
+
+    if request.method == "POST":
+        input_password = request.form.get("password")
+        print(input_password)
+        
+        if check_password_hash(PASSWORD_HASH, input_password):  # 验证密码
+            
+            session["authenticated"] = True
+            return redirect(url_for("index"))
+        else:
+            return render_template("login.html", error="密码错误")
+
+    return render_template("login.html")
+
+@app.route("/index",methods=["GET", "POST"])
+def index():
+    print("Session data:", session)
+    if not session.get("authenticated"):
+        return redirect(url_for("login"))  # 未登录则跳转登录页
     if request.method == 'GET':
         return renders('index.html', error=None)
     cwd = os.getcwd()  # 记录当前工作路径
@@ -49,7 +81,9 @@ def index():   # 主网页
 
     with open('std.cpp', 'w', encoding='utf-8') as f:
         f.write(std)   # 写入std.cpp
-    os.system(f'{GCC_PATH} {options} -o std.exe std.cpp')    # 编译 std
+    print(f'{GCC_PATH} -g std.cpp {options} -o std.exe')
+    os.system(f'{GCC_PATH} -g std.cpp {options} -o std.exe')    # 编译 std
+    
 
     for i in range(1, num + 1):   # 循环并生成数据
         local_vars = global_vars.copy()
@@ -62,7 +96,7 @@ def index():   # 主网页
             return renders('index.html', error=str(err))
         finally:
             in_file.close()
-        os.system(f'std.exe < {i}.in > {i}.out')   # 使用 std 生成答案
+        os.system(f'{os.path.join(".", "std.exe")} < {i}.in > {i}.out')
 
     with zipfile.ZipFile('data.zip', 'w', zipfile.ZIP_DEFLATED) as zf:   # 打包 zip 文件
         for i in range(1, num + 1):
@@ -80,3 +114,6 @@ def index():   # 主网页
 @app.route('/help/')
 def show_help():
     return renders('help.html')
+
+if __name__ == "__main__":
+    app.run(debug=True)

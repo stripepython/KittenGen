@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>登录</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <h2 class="text-center mb-4">请输入访问密码</h2>
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                <form method="POST">
+                    <div class="form-group">
+                        <input type="password" name="password" class="form-control" placeholder="密码" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">进入</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

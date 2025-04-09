@@ -8,7 +8,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 setup(
     name='KittenGen',
     packages=find_packages(exclude=(), include=('*',)),
-    author='stripe-python',
+    author='stripe-python & Introl',
     author_email='stripe-python@139.com',
     maintainer='stripe-python',
     maintainer_email='stripe-python@139.com',
