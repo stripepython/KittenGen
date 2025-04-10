@@ -5,7 +5,7 @@
 请先参照[``.env``文件](/KittenGen/.env)，配置好需要的参数。然后使用以下命令启动docker：
 
 ```
-docker run -d --env-file $(pwd)/.env -p 2025:2025 introljl/datagen:latest
+docker run -d -v $(pwd)/.env:/app/.env -p 2025:2025 introljl/datagen:latest
 ```
 注意：在 Windows 终端下需要将配置文件路径 $(pwd) 替换为绝对路径。
 
